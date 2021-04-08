@@ -58,22 +58,18 @@ class ImpressumCrawler:
 
             website = website.replace("https://", "").replace("http://", "").strip("/")
 
-            url = "http://" + website
+            url = "https://" + website
             print("checking " + url)
             self.debug.append(url)
             try:
                 driver.get(url)
             except WebDriverException:
                 # print("WebDriverException #1 refreshing..")
-                self.debug.append("WebDriverException #1 refreshing..")
-                try:
-                    driver.refresh()
-                except WebDriverException as e:
-                    # print("No Website!")
-                    self.debug.append("No Website!")
-                    # print(e)
-                    self.debug.append(e)
-                    continue
+                self.debug.append("No Website!")
+                print("No Website!")
+                valid_mails[int(id)] = "No Website!"
+                continue
+
             else:
                 # check if site is for sale
                 if "Website steht zum Verkauf" in driver.title:
@@ -401,9 +397,6 @@ class ImpressumCrawler:
         else:
             data = {"token": self.token, "host": host}
 
-        self.debug.append("sending data:")
-        self.debug.append(data)
-
         result = requests.post(url, data=data)
 
         if result.status_code != 200:
@@ -422,6 +415,7 @@ class ImpressumCrawler:
 
         data = json.loads(result.text)
         self.debug.append("getting data complete")
+        self.debug.append(data)
 
         return data
 
