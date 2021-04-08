@@ -533,7 +533,10 @@ class ImpressumCrawler:
 
                 # driver.switch_to.frame(driver.find_element_by_xpath("//frame[@src='" + frame_src + "']"))
                 if frame_name:
-                    driver.switch_to.frame(frame_name)
+                    try:
+                        driver.switch_to.frame(frame_name)
+                    except NoSuchFrameException:
+                        self.debug.append("No such Frame")
                 else:
                     continue
                 source = driver.page_source
