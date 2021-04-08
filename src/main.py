@@ -2,6 +2,8 @@ import json
 import os
 import re
 import statistics
+import sys
+
 from dotenv import load_dotenv
 from time import sleep
 from selenium import webdriver
@@ -44,6 +46,9 @@ class ImpressumCrawler:
 
         data = self.get_data()
         valid_mails = dict()
+
+        if data == -1:
+            sys.exit("Data import failed!")
 
         for id in data:
             self.searched_for_alt_impressums = False
@@ -396,16 +401,23 @@ class ImpressumCrawler:
         else:
             data = {"token": self.token, "host": host}
 
+        self.debug.append("sending data:")
+        self.debug.append(data)
+
         result = requests.post(url, data=data)
 
         if result.status_code != 200:
             # print("Fehler! Status: " + str(result.status_code))
             self.debug.append("Fehler! Status: " + str(result.status_code))
             p = re.compile("<!--(.*?)-->", re.DOTALL)
-            error = p.findall(result.text)[0]
-
-            # print(error)
-            self.debug.append(error)
+            try:
+                error = p.findall(result.text)[0]
+            except IndexError:
+                self.debug.append("IndexError")
+                self.debug.append(result.text)
+            else:
+                # print(error)
+                self.debug.append(error)
             return -1
 
         data = json.loads(result.text)
