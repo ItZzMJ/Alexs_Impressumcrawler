@@ -6,7 +6,8 @@ from dotenv import load_dotenv
 from time import sleep
 from selenium import webdriver
 import requests
-from selenium.common.exceptions import WebDriverException, TimeoutException, ElementClickInterceptedException
+from selenium.common.exceptions import WebDriverException, TimeoutException, ElementClickInterceptedException, \
+    NoSuchFrameException
 from selenium.webdriver.support.wait import WebDriverWait
 
 
@@ -48,7 +49,7 @@ class ImpressumCrawler:
             self.searched_for_alt_impressums = False
             website = data[id]
             #website = "http://www.schwendi.de/home/leben%2b_%2bfreizeit/schulen.html"
-            #website = "http://www.bever.de"
+            #website = "https://www.bast.de"
 
             website = website.replace("https://", "").replace("http://", "").strip("/")
 
@@ -231,9 +232,9 @@ class ImpressumCrawler:
 
         impressum_link = ""
         #print links
-        for link in links:
-            #print(link.get_attribute("href"))
-            self.debug.append(link.get_attribute("href"))
+        # for link in links:
+        #     #print(link.get_attribute("href"))
+        #     self.debug.append(link.get_attribute("href"))
 
         for link in links:
             href = link.get_attribute("href")
@@ -350,7 +351,10 @@ class ImpressumCrawler:
 
                 #driver.switch_to.frame(driver.find_element_by_xpath("//frame[@src='" + frame_src + "']"))
                 if frame_name:
-                    driver.switch_to.frame(frame_name)
+                    try:
+                        driver.switch_to.frame(frame_name)
+                    except NoSuchFrameException:
+                        self.debug.append("No such Frame")
                 else:
                     continue
                 if self.find_impressum() == 1:
@@ -434,7 +438,6 @@ class ImpressumCrawler:
             self.debug.append(error)
         else:
             self.debug.append("finished.")
-
 
     def click_link_and_search_again(self, website):
         driver = self.driver
